@@ -3,6 +3,7 @@
 
 from ctypes import cdll, c_ubyte, util
 import logging
+import time
 
 
 class SPISetupException(Exception):
@@ -167,4 +168,12 @@ class TestInterface(object):
 
 if __name__ == '__main__':
     g = GPIO()
+    g.write_pin(25, 1)
+    time.sleep(5)
+    g.send_data([0x1E])
+    time.sleep(5)
+    g.write_pin(25, 0)
+    time.sleep(5)
+    g.send_data([0xA2, 0])
+    print(g.get_data())
     g.write_pin(25, 1)
