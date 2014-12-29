@@ -93,7 +93,6 @@ class GPIO(object):
 
         status_code = self.handle.wiringPiSetup()
 
-
     def pack(self, data):
         """
         Pack the data in an array of bytes, ready for transmission
@@ -134,6 +133,10 @@ class GPIO(object):
             self.handle.pinMode(pin_number, self.INPUT)
         return [self.handle.digitalRead(pin_number) for pin_number in pin_numbers]
 
+    def write_pin(self, pin_number, value):
+        self.handle.digitalWrite(pin_number, value)
+
+
 
 class TestInterface(object):
     def __init__(self, channel=0, frequency=50000):
@@ -160,3 +163,8 @@ class TestInterface(object):
         sent to that device, use get_sent_data.
                 """
         return self.gpio.get_data()
+
+
+if __name__ == '__main__':
+    g = GPIO()
+    g.write_pin(25, 1)

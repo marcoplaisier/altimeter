@@ -41,3 +41,9 @@ def calculate_values(data, compensate=True):
     # P = D1 * SENS - OFF = (D1 * SENS / 2^21 - OFF) / 2^15
     P = (data['D1'] * SENS / 2**21 - OFF) / 2**15
     return TEMP, P
+
+if __name__ == '__main__':
+    from gpio import GPIO
+
+    g = GPIO()
+    g.send_data([1])
