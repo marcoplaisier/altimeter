@@ -64,7 +64,8 @@ def get_calibration_value(chip, address):
     chip.write_pin(6, 0)
     time.sleep(0.005)
     chip.send_data([address, 0, 0, 0])
-    data = struct.unpack('I', chip.get_data()[1:3])
+    return_data = chip.get_data()
+    data = struct.unpack('I', bytearray([0, 0]) + bytearray(return_data[1:3]))
     chip.write_pin(6, 1)
     return data[0]
 
@@ -79,7 +80,8 @@ def get_temperature(chip):
     chip.write_pin(6, 0)
     time.sleep(0.005)
     chip.send_data([0x00, 0, 0, 0])
-    data = struct.unpack('xI', chip.get_data()[1:4])
+    return_data = chip.get_data()
+    data = struct.unpack('I', bytearray([0]) + bytearray(return_data[1:4]))
     time.sleep(0.01)
     chip.write_pin(6, 1)
     return data[0]
@@ -95,7 +97,8 @@ def get_pressure(chip):
     chip.write_pin(6, 0)
     time.sleep(0.005)
     chip.send_data([0x00, 0, 0, 0])
-    data = struct.unpack('xI', chip.get_data()[1:4])
+    return_data = chip.get_data()
+    data = struct.unpack('I', bytearray([0]) + bytearray(return_data[1:4]))
     time.sleep(0.01)
     chip.write_pin(6, 1)
     return data[0]
@@ -114,12 +117,3 @@ if __name__ == '__main__':
     values['D1'] = get_temperature(g)
     values['D2'] = get_pressure(g)
     print(calculate_values(values))
-
-
-
-
-
-
-
-
-
