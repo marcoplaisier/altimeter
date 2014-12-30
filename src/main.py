@@ -65,7 +65,7 @@ def get_calibration_value(chip, address):
     time.sleep(0.005)
     chip.send_data([address, 0, 0, 0])
     return_data = chip.get_data()
-    data = struct.unpack('I', bytearray([0, 0]) + bytearray(return_data[1:3]))
+    data = struct.unpack('>I', bytearray([0, 0]) + bytearray(return_data[1:3]))
     chip.write_pin(6, 1)
     return data[0]
 
@@ -81,7 +81,7 @@ def get_temperature(chip):
     time.sleep(0.005)
     chip.send_data([0x00, 0, 0, 0])
     return_data = chip.get_data()
-    data = struct.unpack('I', bytearray([0]) + bytearray(return_data[1:4]))
+    data = struct.unpack('>I', bytearray([0]) + bytearray(return_data[1:4]))
     time.sleep(0.01)
     chip.write_pin(6, 1)
     return data[0]
@@ -98,7 +98,7 @@ def get_pressure(chip):
     time.sleep(0.005)
     chip.send_data([0x00, 0, 0, 0])
     return_data = chip.get_data()
-    data = struct.unpack('I', bytearray([0]) + bytearray(return_data[1:4]))
+    data = struct.unpack('>I', bytearray([0]) + bytearray(return_data[1:4]))
     time.sleep(0.01)
     chip.write_pin(6, 1)
     return data[0]
@@ -111,9 +111,10 @@ def get_calibration_values(chip):
 if __name__ == '__main__':
     from gpio import GPIO
 
-    g = GPIO()
-    g = init_chip(g)
-    values = get_calibration_values(g)
-    values['D1'] = get_temperature(g)
-    values['D2'] = get_pressure(g)
-    print(calculate_values(values))
+    while True:
+        g = GPIO()
+        g = init_chip(g)
+        values = get_calibration_values(g)
+        values['D1'] = get_pressure(g)
+        values['D2'] = get_temperature(g)
+        print(calculate_values(values))
