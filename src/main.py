@@ -1,10 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import division, print_function
 
-try:
-    from __future__ import division, print_function
-except ImportError:
-    pass
 import time, struct, sys
 from gpio import GPIO
 
@@ -190,7 +187,7 @@ def loop(chip, calibration_values):
         values['D1'] = get_pressure(chip)
         values['D2'] = get_temperature(chip)
         result = calculate_values(values)
-        print("Temp: {0!d}ºC, Press: {1!d}".format(result))
+        print("Temp: {0[0]}C, Press: {0[1]}".format(result))
         time.sleep(1)
 
 
