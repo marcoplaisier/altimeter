@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import time
+
+CALIBRATION_ADDRESSES = {'C1': 0xA2, 'C2': 0xA4, 'C3': 0xA6, 'C4': 0xA8, 'C5': 0xAA, 'C6': 0xAC}
 
 
 def calculate_compensation(TEMP, SENS, OFF, dT):
@@ -42,8 +45,45 @@ def calculate_values(data, compensate=True):
     P = (data['D1'] * SENS / 2**21 - OFF) / 2**15
     return TEMP, P
 
+
+def init_chip(chip):
+    chip.pin_mode(6, chip.OUTPUT)
+    chip.write_pin(6, 1)
+    time.sleep(0.5)
+    chip.handle.digitalWrite(6, 0)
+    time.sleep(0.005)
+    print(chip.send_data([0x1E]))
+    time.sleep(0.005)
+    chip.handle.digitalWrite(6, 1)
+    time.sleep(0.05)
+    return chip
+
+
+def get_calibration_value(chip, address):
+    chip.write_pin(6, 0)
+    time.sleep(0.005)
+    g.send_data([address, 0])
+    data = g.get_data()
+    for i in data:
+        print(i)
+    g.write_pin(6, 1)
+
+
+def get_calibration_values(chip):
+    return {variable: get_calibration_value(chip, address) for (variable, address) in CALIBRATION_ADDRESSES.items()}
+
+
 if __name__ == '__main__':
     from gpio import GPIO
 
     g = GPIO()
-    g.send_data([1])
+    g = init_chip(g)
+    print(get_calibration_values(g))
+
+
+
+
+
+
+
+

@@ -136,6 +136,8 @@ class GPIO(object):
     def write_pin(self, pin_number, value):
         self.handle.digitalWrite(pin_number, value)
 
+    def pin_mode(self, pin_number, mode):
+        self.handle.pinMode(pin_number, mode)
 
 
 class TestInterface(object):
@@ -163,8 +165,3 @@ class TestInterface(object):
         sent to that device, use get_sent_data.
                 """
         return self.gpio.get_data()
-
-
-if __name__ == '__main__':
-    g = GPIO()
-    g.write_pin(25, 1)
