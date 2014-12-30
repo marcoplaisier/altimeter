@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import time
+import struct
 
 CALIBRATION_ADDRESSES = {'C1': 0xA2, 'C2': 0xA4, 'C3': 0xA6, 'C4': 0xA8, 'C5': 0xAA, 'C6': 0xAC}
 
@@ -62,11 +63,42 @@ def init_chip(chip):
 def get_calibration_value(chip, address):
     chip.write_pin(6, 0)
     time.sleep(0.005)
-    g.send_data([address, 0])
-    data = g.get_data()
-    for i in data:
-        print(i)
-    g.write_pin(6, 1)
+    chip.send_data([address, 0])
+    data = struct.unpack('H', chip.get_data())
+    chip.write_pin(6, 1)
+    return data
+
+
+def get_temperature(chip):
+    chip.write_pin(6, 0)
+    time.sleep(0.005)
+    chip.send_data([0x58])
+    time.sleep(0.01)
+    chip.write_pin(6, 1)
+
+    chip.write_pin(6, 0)
+    time.sleep(0.005)
+    chip.send_data([0x00, 0, 0])
+    data = struct.unpack('H', chip.get_data())
+    time.sleep(0.01)
+    chip.write_pin(6, 1)
+    return data
+
+
+def get_pressure(chip):
+    chip.write_pin(6, 0)
+    time.sleep(0.005)
+    chip.send_data([0x48])
+    time.sleep(0.01)
+    chip.write_pin(6, 1)
+
+    chip.write_pin(6, 0)
+    time.sleep(0.005)
+    chip.send_data([0x00, 0, 0])
+    data = struct.unpack('H', chip.get_data())
+    time.sleep(0.01)
+    chip.write_pin(6, 1)
+    return data
 
 
 def get_calibration_values(chip):
@@ -78,7 +110,11 @@ if __name__ == '__main__':
 
     g = GPIO()
     g = init_chip(g)
-    print(get_calibration_values(g))
+    values = get_calibration_values(g)
+    values['D1'] = get_temperature(g)
+    values['D2'] = get_pressure(g)
+    print(calculate_values(values))
+
 
 
 
