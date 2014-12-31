@@ -3,7 +3,10 @@
 from ctypes import c_ubyte
 
 from unittest import TestCase
-from unittest.mock import Mock, call, patch
+try:
+    from unittest.mock import Mock, call, patch
+except ImportError:
+    from mock import Mock, call, patch
 import main
 
 
