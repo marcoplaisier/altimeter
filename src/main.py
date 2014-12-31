@@ -97,7 +97,7 @@ def init_chip():
     """
     chip = GPIO()
     chip.pin_mode(CHIP_SELECT, chip.OUTPUT)
-    chip.handle.digitalWrite(CHIP_SELECT, 1)
+    chip.write_pin(CHIP_SELECT, 1)
     time.sleep(LONG_WAIT)
 
     with spi_mode(chip):
