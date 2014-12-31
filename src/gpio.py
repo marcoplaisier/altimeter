@@ -137,6 +137,9 @@ class GPIO(object):
     def write_pin(self, pin_number, value):
         self.handle.digitalWrite(pin_number, value)
 
+    def pin_mode(self, pin_number, value):
+        self.handle.pinMode(pin_number, value)
+
 
 
 class TestInterface(object):
