@@ -1,8 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function
+from contextlib import contextmanager
+import time
+import struct
+import sys
 
-import time, struct, sys
 from gpio import GPIO
 
 LONG_WAIT = 0.5
@@ -12,6 +15,15 @@ PRESSURE_ADDRESS = 0x48
 TEMPERATURE_ADDRESS = 0x58
 RESET_COMMAND = 0x1E
 CALIBRATION_ADDRESSES = {'C1': 0xA2, 'C2': 0xA4, 'C3': 0xA6, 'C4': 0xA8, 'C5': 0xAA, 'C6': 0xAC}
+
+
+@contextmanager
+def spi_mode(chip):
+    chip.write_pin(CHIP_SELECT, 0)
+    time.sleep(SHORT_WAIT)
+    yield
+    chip.write_pin(CHIP_SELECT, 1)
+    time.sleep(SHORT_WAIT)
 
 
 def calculate_compensation(TEMP, SENS, OFF, dT):
@@ -85,13 +97,12 @@ def init_chip():
     """
     chip = GPIO()
     chip.pin_mode(CHIP_SELECT, chip.OUTPUT)
-    chip.write_pin(CHIP_SELECT, 1)
-    time.sleep(LONG_WAIT)
-    chip.handle.digitalWrite(CHIP_SELECT, 0)
-    time.sleep(SHORT_WAIT)
-    chip.send_data([RESET_COMMAND])
-    time.sleep(SHORT_WAIT)
     chip.handle.digitalWrite(CHIP_SELECT, 1)
+    time.sleep(LONG_WAIT)
+
+    with spi_mode(chip):
+        chip.send_data([RESET_COMMAND])
+
     time.sleep(LONG_WAIT)
     return chip
 
@@ -110,12 +121,11 @@ def get_calibration_value(chip, address):
     :param address: the address where the calibration value is stored
     :return: the calibration value
     """
-    chip.write_pin(CHIP_SELECT, 0)
-    time.sleep(SHORT_WAIT)
-    chip.send_data([address, 0, 0, 0])
-    return_data = chip.get_data()
-    data = struct.unpack('>I', bytearray([0, 0]) + bytearray(return_data[1:3]))
-    chip.write_pin(CHIP_SELECT, 1)
+    with spi_mode(chip):
+        chip.send_data([address, 0, 0, 0])
+        return_data = chip.get_data()
+        data = struct.unpack('>I', bytearray([0, 0]) + bytearray(return_data[1:3]))
+
     return data[0]
 
 
@@ -130,19 +140,14 @@ def get_measurement(chip, address):
     :type address: specific value at address (either temperature or pressure)
     :return: the measurement
     """
-    chip.write_pin(CHIP_SELECT, 0)
-    time.sleep(SHORT_WAIT)
-    chip.send_data([address])
-    time.sleep(SHORT_WAIT)
-    chip.write_pin(CHIP_SELECT, 1)
+    with spi_mode(chip):
+        chip.send_data([address])
 
-    chip.write_pin(CHIP_SELECT, 0)
-    time.sleep(SHORT_WAIT)
-    chip.send_data([0x00, 0, 0, 0])
-    return_data = chip.get_data()
-    data = struct.unpack('>I', bytearray([0]) + bytearray(return_data[1:4]))
-    time.sleep(SHORT_WAIT)
-    chip.write_pin(CHIP_SELECT, 1)
+    with spi_mode(chip):
+        chip.send_data([0x00, 0, 0, 0])
+        return_data = chip.get_data()
+        data = struct.unpack('>I', bytearray([0]) + bytearray(return_data[1:4]))
+
     return data[0]
 
 
@@ -192,6 +197,6 @@ def loop(chip, calibration_values):
 
 
 if __name__ == '__main__':
-    chip = init_chip()
-    values = get_calibration_values(chip)
-    sys.exit(loop(chip, values))
+    c = init_chip()
+    values = get_calibration_values(c)
+    sys.exit(loop(c, values))

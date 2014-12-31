@@ -3,6 +3,7 @@
 
 from ctypes import cdll, c_ubyte, util
 import logging
+import time
 
 
 class SPISetupException(Exception):
@@ -136,8 +137,6 @@ class GPIO(object):
     def write_pin(self, pin_number, value):
         self.handle.digitalWrite(pin_number, value)
 
-    def pin_mode(self, pin_number, mode):
-        self.handle.pinMode(pin_number, mode)
 
 
 class TestInterface(object):
@@ -165,3 +164,16 @@ class TestInterface(object):
         sent to that device, use get_sent_data.
                 """
         return self.gpio.get_data()
+
+
+if __name__ == '__main__':
+    g = GPIO()
+    g.write_pin(25, 1)
+    time.sleep(5)
+    g.send_data([0x1E])
+    time.sleep(5)
+    g.write_pin(25, 0)
+    time.sleep(5)
+    g.send_data([0xA2, 0])
+    print(g.get_data())
+    g.write_pin(25, 1)
